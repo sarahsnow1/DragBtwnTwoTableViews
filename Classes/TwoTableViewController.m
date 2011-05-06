@@ -19,7 +19,6 @@
 	
 	panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panRecognized:)];
 	[panGesture setDelegate: self];
-//	[self.view setBackgroundColor:[UIColor lightGrayColor]];
 	[self.view addGestureRecognizer:panGesture];
 	
 	tableViewA = [[DBTableView alloc] initWithFrame:CGRectMake(100, 50, 200, 600) style:UITableViewStylePlain delegate: self];
@@ -54,6 +53,8 @@
 	
 	arrayA = [[NSMutableArray alloc] initWithObjects: @"array A - value 0", @"array A - value 1", @"array A - value 2", nil ];
 	arrayB = [[NSMutableArray alloc] initWithObjects: @"array B - value 0", @"array B - value 1", @"array B - value 2", @"array B - value 3", @"array B - value 4", @"array B - value 5", nil ];
+	
+	_validOriginPoint = YES;
 	
     [super viewDidLoad];
 }
@@ -150,16 +151,34 @@
 #pragma mark UIGestureRecognizer delegate functions
 - (void)panRecognized:(UIPanGestureRecognizer *)inRecognizer {
 
+	
 	if (inRecognizer.state == UIGestureRecognizerStateBegan) {
-		_originPoint = [panGesture locationInView: self.view];
-		[_moveableView setCenter: _originPoint];
-		[_moveableView setHidden: NO];
 		
-		[[fromTableView cellForRowAtIndexPath:pathToAdjustAlphaAndHeight].contentView setHidden: YES];
-		
-		DLog(@"FIRST LOCATION %i",_originPoint.x);
+		if (CGRectContainsPoint([tableViewA frame], [panGesture locationInView: self.view]) || CGRectContainsPoint([tableViewB frame], [panGesture locationInView: self.view])) {
+			_validOriginPoint = YES;
+			
+			_originPoint = [panGesture locationInView: self.view];
+			[_moveableView setCenter: _originPoint];
+			[_moveableView setHidden: NO];
+			
+			[[fromTableView cellForRowAtIndexPath:pathToAdjustAlphaAndHeight].contentView setHidden: YES];
+			
+			DLog(@"FIRST LOCATION %i",_originPoint.x);
+			
+		}
+		else {
+			_validOriginPoint = NO;
+		}
+
+			
+				
 	}
-	else if(inRecognizer.state == UIGestureRecognizerStateChanged)
+	
+	if (!_validOriginPoint) 
+		return;
+
+	
+	if(inRecognizer.state == UIGestureRecognizerStateChanged)
 	{
 		DLog(@"%@",[fromTableView title]);
 		
@@ -193,7 +212,9 @@
 		
 	}
 	else if (inRecognizer.state == UIGestureRecognizerStateEnded) {
-
+		
+		_validOriginPoint = YES;
+		
 		if (CGRectContainsPoint([tableViewB frame], [panGesture locationInView: self.view]) && [[fromTableView title] isEqualToString: @"A"]) { //moved from A to B
 			DLog(@" MOVED A to B");
 			[self animateToEndOfB];
@@ -206,6 +227,7 @@
 			[self animateBackToOrigin];
 		}
 	}
+
 }
 
 
@@ -237,6 +259,9 @@
 
 
 - (void)dealloc {
+	[arrayA release];
+	[arrayB release];
+	[_moveableView release];
     [super dealloc];
 }
 

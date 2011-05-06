@@ -16,6 +16,7 @@
 	UIPanGestureRecognizer *panGesture;
 	DBTableView *fromTableView;
 	CGPoint _originPoint;
+	BOOL _validOriginPoint;
 	
 	int pathToAdjustHeight;
 	NSIndexPath *pathToAdjustAlphaAndHeight;
